@@ -73,8 +73,9 @@ def authenticate!
   # This code simulates "loading the Stripe customer for your current session".
   # Your own logic will likely look very different.
   return @customer if @customer
-  if session.has_key?(:customer_id)
-    customer_id = session[:customer_id]
+  
+  if request.env.has_key?("HTTP_X_CUSTOMER_ID") || session.has_key?(:customer_id)
+    customer_id = request.env["HTTP_X_CUSTOMER_ID"] || session[:customer_id]
     begin
       @customer = Stripe::Customer.retrieve(customer_id)
     rescue Stripe::InvalidRequestError
