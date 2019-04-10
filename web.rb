@@ -23,10 +23,12 @@ end
 post '/ephemeral_keys' do
   authenticate!
   begin
+    log_info("Got params: #{params}")
     key = Stripe::EphemeralKey.create(
       {customer: @customer.id},
       {stripe_version: params["api_version"]}
     )
+
   rescue Stripe::StripeError => e
     status 402
     return log_info("Error creating ephemeral key: #{e.message}")
@@ -40,9 +42,11 @@ end
 post '/charge' do
   authenticate!
   # Get the credit card details submitted
+    log_info("Got params: #{params}")
   payload = params
   if request.content_type.include? 'application/json' and params.empty?
     payload = Sinatra::IndifferentHash[JSON.parse(request.body.read)]
+    log_info("Got payload: #{payload}")
   end
 
   source = payload[:source]
@@ -100,6 +104,7 @@ end
 post '/create_charge' do
   # Create the charge on Stripe's servers
   begin
+    log_info("Got params: #{params}")
     charge = Stripe::Charge.create(
       :amount => params[:amount], # this number should be in cents
       :currency => "usd",
@@ -124,6 +129,7 @@ end
 # to prevent misuse
 post '/create_intent' do
   begin
+    log_info("Got params: #{params}")
     intent = Stripe::PaymentIntent.create(
       :allowed_source_types => ['card'],
       :amount => params[:amount],
